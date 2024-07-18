@@ -22,12 +22,33 @@ const VisuallyHiddenInput = styled('input')({
   width: 1,
 });
 
+interface MyObject {
+  REGION_CD: number;
+  REGION_NAME: string;
+  BU_NO: number;
+  BU_NM: string;
+  ACCT_NO: number;
+}
+
 type RowData = {
   [key: string]: any;
 };
 
 function App() {
   const [data, setData] = useState<RowData[]>([]);
+  const [sortedRegions, setSortedRegions] = useState<Record<string, MyObject[]>>({} as Record<string, MyObject[]>);
+
+  const groupByRegion = (data: MyObject[]): Record<string, MyObject[]> => {
+    return data.reduce((acc: Record<string, MyObject[]>, obj) => {
+      const regionName = obj.REGION_NAME;
+      if (!acc[regionName]) {
+        acc[regionName] = [];
+      }
+      acc[regionName].push(obj);
+      return acc;
+    }, {});
+  }
+
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -40,9 +61,10 @@ function App() {
           const workbook = XLSX.read(binaryStr, { type: "binary" });
           const sheetName = workbook.SheetNames[0];
           const sheet = workbook.Sheets[sheetName];
-          const parsedData = XLSX.utils.sheet_to_json<RowData>(sheet);
+          const parsedData = XLSX.utils.sheet_to_json<RowData>(sheet) as unknown as Array<MyObject>;
 
-          console.log(parsedData, "parsedData!!!")
+          const sortedRegions = groupByRegion(parsedData);
+          setSortedRegions(sortedRegions)
 
           setData(parsedData);
         }
@@ -50,6 +72,8 @@ function App() {
     }
   };
 
+  console.log(sortedRegions, "sortedRegions!!");
+  
   return (
     <div className="App">
       <Button
