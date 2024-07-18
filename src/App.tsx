@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import * as XLSX from "xlsx";
 import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
@@ -9,6 +10,8 @@ import Paper from '@mui/material/Paper';
 import { styled } from '@mui/material/styles';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { Button } from "@mui/material";
+import { generatePDF } from "./pdf";
+import { sendEmailService } from "./api";
 
 const VisuallyHiddenInput = styled('input')({
   clip: 'rect(0 0 0 0)',
@@ -49,6 +52,19 @@ function App() {
     }, {});
   }
 
+  const handleSubmit = async (files: Array<File>) => {
+    const formData = new FormData();
+    files.forEach((file) => {
+      formData.append('files', file);
+    });
+
+    try {
+      const response = await sendEmailService(formData);
+      console.log("Email sent successfully:", response);
+    } catch (error) {
+      console.error("Error sending email:", error);
+    }
+  };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -62,18 +78,40 @@ function App() {
           const sheetName = workbook.SheetNames[0];
           const sheet = workbook.Sheets[sheetName];
           const parsedData = XLSX.utils.sheet_to_json<RowData>(sheet) as unknown as Array<MyObject>;
-
           const sortedRegions = groupByRegion(parsedData);
           setSortedRegions(sortedRegions)
-
           setData(parsedData);
         }
       };
     }
   };
 
-  console.log(sortedRegions, "sortedRegions!!");
-  
+  const createObjectsForPDFs = () => {
+    const files: File[] = [];
+
+    if (Object.keys(sortedRegions).length > 0) {
+      Object.entries(sortedRegions).forEach(([regionName, regionData]) => {
+        const columns = Object.keys(regionData[0]).slice(0, 5);
+        const rows = regionData.map(obj => Object.values(obj).slice(0, 5));
+
+        const pdf = generatePDF(columns, rows, regionName);
+        files.push(pdf);
+      });
+
+      setSortedRegions({});
+    }
+    if (files.length > 0) {
+      handleSubmit(files);
+    }
+    return files;
+  };
+
+  useEffect(() => {
+    if (Object.keys(sortedRegions).length > 0) {
+      createObjectsForPDFs();
+    }
+  }, [sortedRegions]);
+
   return (
     <div className="App">
       <Button
@@ -101,7 +139,7 @@ function App() {
                 ))}
               </TableRow>
             </TableHead>
-            {/* <TableBody>
+            <TableBody>
               {data.map((row, index) => (
                 <TableRow
                   key={index}
@@ -112,7 +150,7 @@ function App() {
                   ))}
                 </TableRow>
               ))}
-            </TableBody> */}
+            </TableBody>
           </Table>
         </TableContainer>
       )}
