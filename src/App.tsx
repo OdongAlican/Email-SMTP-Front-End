@@ -37,7 +37,7 @@ interface MyObject {
   DIBS_SALARY_ADV: number
   DIBS_BL: number
   DIBS_SCH_FEES: number
-  DIBS_SCH_AGRIC: number
+  DIBS_AGRIC: number
   DIBS_PHL: number
 }
 

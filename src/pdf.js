@@ -6,8 +6,23 @@ export const generatePDF = (columns, rows, branchName) => {
 
     doc.text(`Loans Disbursed for ${branchName} Branch on 17th July 2024`, 10, 10);
 
+    const customHeaders = columns.map(col => {
+        return col === "CREDIT_OFFICER" ? ("Credit Officer").toUpperCase() :
+            col === "DIBS_MAFL" ? ("MALF").toUpperCase() :
+                col === "DIBS_CLEAN_ENERGY" ? ("CLEAN ENERGY").toUpperCase() :
+                    col === "DIBS_GGLS" ? ("GGLS").toUpperCase() :
+                        col === "DIBS_SGL" ? ("Salary Guarantee").toUpperCase() :
+                            col === "DIBS_CB" ? ("Community Banking").toUpperCase() :
+                                col === "DIBS_SALARY_ADV" ? ("Salary Advance").toUpperCase() :
+                                    col === "DIBS_BL" ? ("Business Loan").toUpperCase() :
+                                        col === "DIBS_SCH_FEES" ? ("School Fees").toUpperCase() :
+                                            col === "DIBS_AGRIC" ? ("Agriculture").toUpperCase() :
+                                                col === "DIBS_PHL" ? ("Housing").toUpperCase()
+                                                    : col.toUpperCase();
+    });
+
     doc.autoTable({
-        head: [columns],
+        head: [customHeaders],
         body: rows,
         startY: 20,
         theme: 'grid'
