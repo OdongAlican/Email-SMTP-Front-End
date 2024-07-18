@@ -7,7 +7,7 @@ export const generatePDF = (columns, rows, branchName) => {
     doc.text(`Loans Disbursed for ${branchName} Branch on 17th July 2024`, 10, 10);
 
     const customHeaders = columns.map(col => {
-        return col === "CREDIT_OFFICER" ? ("Credit Officer").toUpperCase() :
+        return col === "CREDIT_OFFICER" ? ("RO").toUpperCase() :
             col === "DIBS_MAFL" ? ("MALF").toUpperCase() :
                 col === "DIBS_CLEAN_ENERGY" ? ("CLEAN ENERGY").toUpperCase() :
                     col === "DIBS_GGLS" ? ("GGLS").toUpperCase() :

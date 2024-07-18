@@ -28,22 +28,28 @@ const VisuallyHiddenInput = styled('input')({
 interface MyObject {
   BU_NM: string;
   ACCT_NO: number;
-  CREDIT_OFFICER: string;
-  DIBS_MAFL: number
-  DIBS_CLEAN_ENERGY: number
-  DIBS_GGLS: number
-  DIBS_SGL: number
-  DIBS_CB: number
-  DIBS_SALARY_ADV: number
-  DIBS_BL: number
-  DIBS_SCH_FEES: number
-  DIBS_AGRIC: number
-  DIBS_PHL: number
+  DIBS_MAFL: number;
+  DIBS_CLEAN_ENERGY: number;
+  DIBS_GGLS: number;
+  DIBS_SGL: number;
+  DIBS_CB: number;
+  DIBS_SALARY_ADV: number;
+  DIBS_BL: number;
+  DIBS_SCH_FEES: number;
+  DIBS_AGRIC: number;
+  DIBS_PHL: number;
 }
 
 type RowData = {
   [key: string]: any;
 };
+
+function formatAsMoney(value: number) {
+  return value.toLocaleString('en-UG', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  });
+}
 
 function App() {
   const [data, setData] = useState<RowData[]>([]);
@@ -51,11 +57,11 @@ function App() {
 
   const groupByRegion = (data: MyObject[]): Record<string, MyObject[]> => {
     return data.reduce((acc: Record<string, MyObject[]>, obj) => {
-      const branchName = obj.BU_NM;
-      if (!acc[branchName]) {
-        acc[branchName] = [];
+      const regionName = obj.BU_NM;
+      if (!acc[regionName]) {
+        acc[regionName] = [];
       }
-      acc[branchName].push(obj);
+      acc[regionName].push(obj);
       return acc;
     }, {});
   }
@@ -98,11 +104,11 @@ function App() {
     const files: File[] = [];
 
     if (Object.keys(sortedRegions).length > 0) {
-      Object.entries(sortedRegions).forEach(([branchName, regionData]) => {
+      Object.entries(sortedRegions).forEach(([regionName, regionData]) => {
         const columns = Object.keys(regionData[0]).slice(2, 13);
-        const rows = regionData.map(obj => Object.values(obj).slice(2, 13));
+        const rows = regionData.map(obj => Object.values(obj).slice(2, 13).map(value => typeof value === 'number' ? formatAsMoney(value) : value));
 
-        const pdf = generatePDF(columns, rows, branchName);
+        const pdf = generatePDF(columns, rows, regionName);
         files.push(pdf);
       });
 
@@ -142,7 +148,7 @@ function App() {
           <Table sx={{ minWidth: 650 }} aria-label="simple table">
             <TableHead>
               <TableRow>
-                {Object.keys(data[0]).slice(0, 13).map((key) => (
+                {Object.keys(data[0]).map((key) => (
                   <TableCell key={key}>{key}</TableCell>
                 ))}
               </TableRow>
@@ -153,8 +159,8 @@ function App() {
                   key={index}
                   sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                 >
-                  {Object.values(row).slice(0, 13).map((value, index) => (
-                    <TableCell key={index}>{value}</TableCell>
+                  {Object.values(row).map((value, index) => (
+                    <TableCell key={index}>{typeof value === 'number' ? formatAsMoney(value) : value}</TableCell>
                   ))}
                 </TableRow>
               ))}
