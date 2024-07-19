@@ -29,7 +29,6 @@ function formatAsMoney(value: number) {
 
 function App() {
   const [loanDisbursementData, setLoanDisbursementData] = useState<RowData[]>([]);
-  const [depositData, setDepositData] = useState<RowData[]>([]);
   const [sortedRegionsLoanDistribution, setSortedRegionsLoanDistribution] = useState<Record<string, ILoanDisbursement[]>>({});
   const [sortedRegionsDeposits, setSortedRegionsDeposits] = useState<Record<string, IDeposit[]>>({});
 
@@ -103,7 +102,6 @@ function App() {
           const parsedData = XLSX.utils.sheet_to_json<RowData>(sheet) as unknown as Array<IDeposit>;
           const sortedRegionsDeposits = groupByRegionDeposits(parsedData);
           setSortedRegionsDeposits(sortedRegionsDeposits);
-          setDepositData(parsedData);
         }
       };
     }
@@ -125,8 +123,6 @@ function App() {
         const depositRows = depositData.map(obj => Object.values(obj).slice(2).map(value => typeof value === 'number' ? formatAsMoney(value) : value));
 
         const pdf = generatePDF(loanColumns, loanRows, depositColumns, depositRows, regionName);
-
-        // console.log(pdf)
         files.push(pdf);
       });
 
@@ -147,8 +143,6 @@ function App() {
     }
     // eslint-disable-next-line
   }, [sortedRegionsLoanDistribution, sortedRegionsDeposits]);
-
-  console.log(depositData, "Deposit Data")
 
   return (
     <div className="App">
