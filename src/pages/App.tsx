@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import * as XLSX from "xlsx";
-import { styled } from '@mui/material/styles';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { Button, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from "@mui/material";
 import { generatePDF } from "../utils/pdf";
@@ -8,7 +7,7 @@ import { sendEmailService } from "../utils/api";
 import { IDeposit, ILoanDisbursement, RowData } from "../utils/interface";
 import BasicTabs, { CustomTabPanel } from "../components/TabsComponent";
 import { formatAsMoney, VisuallyHiddenInput } from "../utils/helpers";
-
+import RegionalReports from "./RegionalReports";
 
 function App() {
   const [loanDisbursementData, setLoanDisbursementData] = useState<RowData[]>([]);
@@ -166,12 +165,9 @@ function App() {
           </Grid>
         </CustomTabPanel>
         <CustomTabPanel value={value} index={1}>
-          
-
+          <RegionalReports />
         </CustomTabPanel>
       </BasicTabs>
-
-
       {loanDisbursementData.length > 0 && (
         <TableContainer component={Paper}>
           <Table sx={{ minWidth: 650 }} aria-label="simple table">
