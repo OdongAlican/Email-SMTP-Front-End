@@ -1,10 +1,10 @@
 import axios from "axios";
 
-export const baseUrl = "http://localhost:8080/api/v1/send-emails";
+export const baseUrl = "http://localhost:8080/api/v1";
 
 export const sendEmailService = async (body: FormData): Promise<any> => {
     try {
-        const response = await axios.post(baseUrl, body, {
+        const response = await axios.post(`${baseUrl}/send-emails`, body, {
             headers: {
                 'Content-Type': 'multipart/form-data'
             }

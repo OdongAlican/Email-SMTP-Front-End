@@ -3,34 +3,22 @@ import * as XLSX from "xlsx";
 import { styled } from '@mui/material/styles';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { Button, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from "@mui/material";
-import { generatePDF } from "./pdf";
-import { sendEmailService } from "./api";
-import { IDeposit, ILoanDisbursement, RowData } from "./interface";
+import { generatePDF } from "../utils/pdf";
+import { sendEmailService } from "../utils/api";
+import { IDeposit, ILoanDisbursement, RowData } from "../utils/interface";
+import BasicTabs, { CustomTabPanel } from "../components/TabsComponent";
+import { formatAsMoney, VisuallyHiddenInput } from "../utils/helpers";
 
-const VisuallyHiddenInput = styled('input')({
-  clip: 'rect(0 0 0 0)',
-  clipPath: 'inset(50%)',
-  height: 1,
-  overflow: 'hidden',
-  position: 'absolute',
-  bottom: 0,
-  left: 0,
-  whiteSpace: 'nowrap',
-  width: 1,
-});
-
-
-function formatAsMoney(value: number) {
-  return value.toLocaleString('en-UG', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0
-  });
-}
 
 function App() {
   const [loanDisbursementData, setLoanDisbursementData] = useState<RowData[]>([]);
   const [sortedRegionsLoanDistribution, setSortedRegionsLoanDistribution] = useState<Record<string, ILoanDisbursement[]>>({});
   const [sortedRegionsDeposits, setSortedRegionsDeposits] = useState<Record<string, IDeposit[]>>({});
+  const [value, setValue] = useState<number>(0);
+
+  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
+    setValue(newValue);
+  };
 
   const groupByRegionLoanDisbursment = (data: ILoanDisbursement[]): Record<string, ILoanDisbursement[]> => {
     return data.reduce((acc: Record<string, ILoanDisbursement[]>, obj) => {
@@ -146,34 +134,43 @@ function App() {
 
   return (
     <div className="App">
-      <Grid container>
-        <Grid item xs={6}>
-          <Button
-            component="label"
-            variant="contained"
-            sx={{ mb: 3 }}
-            startIcon={<CloudUploadIcon />}
-          >
-            Loan Disbursement Upload
-            <VisuallyHiddenInput
-              onChange={handleLoandDisbursementFileUpload}
-              accept=".xlsx, .xls, .csv"
-              type="file" />
-          </Button>
-          <Button
-            component="label"
-            variant="contained"
-            sx={{ mb: 3 }}
-            startIcon={<CloudUploadIcon />}
-          >
-            Deposits Report
-            <VisuallyHiddenInput
-              onChange={handleLoandDepositsFileUpload}
-              accept=".xlsx, .xls, .csv"
-              type="file" />
-          </Button>
-        </Grid>
-      </Grid>
+      <BasicTabs value={value} handleChange={handleChange}>
+        <CustomTabPanel value={value} index={0}>
+          <Grid container>
+            <Grid item xs={6}>
+              <Button
+                component="label"
+                variant="contained"
+                sx={{ mb: 3 }}
+                startIcon={<CloudUploadIcon />}
+              >
+                Loan Disbursement Upload
+                <VisuallyHiddenInput
+                  onChange={handleLoandDisbursementFileUpload}
+                  accept=".xlsx, .xls, .csv"
+                  type="file" />
+              </Button>
+              <Button
+                component="label"
+                variant="contained"
+                sx={{ mb: 3 }}
+                startIcon={<CloudUploadIcon />}
+              >
+                Deposits Report
+                <VisuallyHiddenInput
+                  onChange={handleLoandDepositsFileUpload}
+                  accept=".xlsx, .xls, .csv"
+                  type="file" />
+              </Button>
+            </Grid>
+          </Grid>
+        </CustomTabPanel>
+        <CustomTabPanel value={value} index={1}>
+          
+
+        </CustomTabPanel>
+      </BasicTabs>
+
 
       {loanDisbursementData.length > 0 && (
         <TableContainer component={Paper}>

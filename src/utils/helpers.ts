@@ -1,3 +1,5 @@
+import { styled } from '@mui/material/styles';
+
 export const determineLoanDisBurseMentColumnHeaders = (loanColumns: Array<String>) => {
     return loanColumns.map(col => {
         return col === "CREDIT_OFFICER" ? ("RO").toUpperCase() :
@@ -28,5 +30,25 @@ export const determineDepositsColumnHeaders = (depositColumns: Array<String>) =>
                                 : col.toUpperCase();
 
 
+    });
+}
+
+
+export const VisuallyHiddenInput = styled('input')({
+    clip: 'rect(0 0 0 0)',
+    clipPath: 'inset(50%)',
+    height: 1,
+    overflow: 'hidden',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    whiteSpace: 'nowrap',
+    width: 1,
+});
+
+export function formatAsMoney(value: number) {
+    return value.toLocaleString('en-UG', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
     });
 }
