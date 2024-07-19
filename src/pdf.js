@@ -1,37 +1,33 @@
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import moment from 'moment';
+import { determineDepositsColumnHeaders, determineLoanDisBurseMentColumnHeaders } from './helpers';
 
-export const generatePDF = (columns, rows, branchName) => {
+export const generatePDF = (loanColumns, loanRows, depositColumns, depositRows, branchName) => {
     const doc = new jsPDF({ orientation: 'landscape' });
+    const date = new Date();
+    const formattedDate = moment(date.setDate(date.getDate() - 1)).format('MMMM Do YYYY');
 
-    doc.text(`Loans Disbursed for ${branchName} Branch on 17th July 2024`, 10, 10);
-
-    const customHeaders = columns.map(col => {
-        return col === "CREDIT_OFFICER" ? ("RO").toUpperCase() :
-            col === "DIBS_MAFL" ? ("MALF").toUpperCase() :
-                col === "DIBS_CLEAN_ENERGY" ? ("CLEAN ENERGY").toUpperCase() :
-                    col === "DIBS_GGLS" ? ("GGLS").toUpperCase() :
-                        col === "DIBS_SGL" ? ("Salary Guarantee").toUpperCase() :
-                            col === "DIBS_CB" ? ("Community Banking").toUpperCase() :
-                                col === "DIBS_SALARY_ADV" ? ("Salary Advance").toUpperCase() :
-                                    col === "DIBS_BL" ? ("Business Loan").toUpperCase() :
-                                        col === "DIBS_SCH_FEES" ? ("School Fees").toUpperCase() :
-                                            col === "DIBS_AGRIC" ? ("Agriculture").toUpperCase() :
-                                                col === "DIBS_PHL" ? ("Housing").toUpperCase()
-                                                    : col.toUpperCase();
-    });
-
+    doc.text(`Loans Disbursed for ${branchName} Branch on ${formattedDate}`, 15, 10);
     doc.autoTable({
-        head: [customHeaders],
-        body: rows,
+        head: [determineLoanDisBurseMentColumnHeaders(loanColumns)],
+        body: loanRows,
         startY: 20,
         theme: 'grid'
     });
 
-    const pdfBlob = doc.output('blob');
+    doc.text(`Deposits for ${branchName} Branch on ${formattedDate}`, 15, doc.autoTable.previous.finalY + 30);
+    doc.autoTable({
+        head: [determineDepositsColumnHeaders(depositColumns)],
+        body: depositRows,
+        startY: doc.autoTable.previous.finalY + 40,
+        theme: 'grid'
+    });
 
-    const file = new File([pdfBlob], `${branchName.split(" ").join("_")}_data`, { type: 'application/pdf' });
+    doc.save()
 
-    return file;
+    // const pdfBlob = doc.output('blob');
+    // const file = new File([pdfBlob], `${branchName.split(" ").join("_")}_data.pdf`, { type: 'application/pdf' });
+
+    // return file;
 };
-

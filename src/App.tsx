@@ -1,17 +1,11 @@
 import { useEffect, useState } from "react";
 import * as XLSX from "xlsx";
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Paper from '@mui/material/Paper';
 import { styled } from '@mui/material/styles';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import { Button } from "@mui/material";
+import { Button, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from "@mui/material";
 import { generatePDF } from "./pdf";
 import { sendEmailService } from "./api";
+import { IDeposit, ILoanDisbursement, RowData } from "./interface";
 
 const VisuallyHiddenInput = styled('input')({
   clip: 'rect(0 0 0 0)',
@@ -25,24 +19,6 @@ const VisuallyHiddenInput = styled('input')({
   width: 1,
 });
 
-interface MyObject {
-  BU_NM: string;
-  ACCT_NO: number;
-  DIBS_MAFL: number;
-  DIBS_CLEAN_ENERGY: number;
-  DIBS_GGLS: number;
-  DIBS_SGL: number;
-  DIBS_CB: number;
-  DIBS_SALARY_ADV: number;
-  DIBS_BL: number;
-  DIBS_SCH_FEES: number;
-  DIBS_AGRIC: number;
-  DIBS_PHL: number;
-}
-
-type RowData = {
-  [key: string]: any;
-};
 
 function formatAsMoney(value: number) {
   return value.toLocaleString('en-UG', {
@@ -52,11 +28,24 @@ function formatAsMoney(value: number) {
 }
 
 function App() {
-  const [data, setData] = useState<RowData[]>([]);
-  const [sortedRegions, setSortedRegions] = useState<Record<string, MyObject[]>>({} as Record<string, MyObject[]>);
+  const [loanDisbursementData, setLoanDisbursementData] = useState<RowData[]>([]);
+  const [depositData, setDepositData] = useState<RowData[]>([]);
+  const [sortedRegionsLoanDistribution, setSortedRegionsLoanDistribution] = useState<Record<string, ILoanDisbursement[]>>({});
+  const [sortedRegionsDeposits, setSortedRegionsDeposits] = useState<Record<string, IDeposit[]>>({});
 
-  const groupByRegion = (data: MyObject[]): Record<string, MyObject[]> => {
-    return data.reduce((acc: Record<string, MyObject[]>, obj) => {
+  const groupByRegionLoanDisbursment = (data: ILoanDisbursement[]): Record<string, ILoanDisbursement[]> => {
+    return data.reduce((acc: Record<string, ILoanDisbursement[]>, obj) => {
+      const regionName = obj.BU_NM;
+      if (!acc[regionName]) {
+        acc[regionName] = [];
+      }
+      acc[regionName].push(obj);
+      return acc;
+    }, {});
+  }
+
+  const groupByRegionDeposits = (data: IDeposit[]): Record<string, IDeposit[]> => {
+    return data.reduce((acc: Record<string, IDeposit[]>, obj) => {
       const regionName = obj.BU_NM;
       if (!acc[regionName]) {
         acc[regionName] = [];
@@ -80,7 +69,7 @@ function App() {
     }
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLoandDisbursementFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files && files[0]) {
       const reader = new FileReader();
@@ -91,10 +80,30 @@ function App() {
           const workbook = XLSX.read(binaryStr, { type: "binary" });
           const sheetName = workbook.SheetNames[0];
           const sheet = workbook.Sheets[sheetName];
-          const parsedData = XLSX.utils.sheet_to_json<RowData>(sheet) as unknown as Array<MyObject>;
-          const sortedRegions = groupByRegion(parsedData);
-          setSortedRegions(sortedRegions)
-          setData(parsedData);
+          const parsedData = XLSX.utils.sheet_to_json<RowData>(sheet) as unknown as Array<ILoanDisbursement>;
+          const sortedRegionsLoanDistribution = groupByRegionLoanDisbursment(parsedData);
+          setSortedRegionsLoanDistribution(sortedRegionsLoanDistribution);
+          setLoanDisbursementData(parsedData);
+        }
+      };
+    }
+  };
+
+  const handleLoandDepositsFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files[0]) {
+      const reader = new FileReader();
+      reader.readAsBinaryString(files[0]);
+      reader.onload = (event) => {
+        const binaryStr = event.target?.result;
+        if (binaryStr) {
+          const workbook = XLSX.read(binaryStr, { type: "binary" });
+          const sheetName = workbook.SheetNames[0];
+          const sheet = workbook.Sheets[sheetName];
+          const parsedData = XLSX.utils.sheet_to_json<RowData>(sheet) as unknown as Array<IDeposit>;
+          const sortedRegionsDeposits = groupByRegionDeposits(parsedData);
+          setSortedRegionsDeposits(sortedRegionsDeposits);
+          setDepositData(parsedData);
         }
       };
     }
@@ -103,58 +112,87 @@ function App() {
   const createObjectsForPDFs = () => {
     const files: File[] = [];
 
-    if (Object.keys(sortedRegions).length > 0) {
-      Object.entries(sortedRegions).forEach(([regionName, regionData]) => {
-        const columns = Object.keys(regionData[0]).slice(2, 13);
-        const rows = regionData.map(obj => Object.values(obj).slice(2, 13).map(value => typeof value === 'number' ? formatAsMoney(value) : value));
+    if (Object.keys(sortedRegionsLoanDistribution).length > 0 && Object.keys(sortedRegionsDeposits).length > 0) {
 
-        const pdf = generatePDF(columns, rows, regionName);
-        files.push(pdf);
+      Object.entries(sortedRegionsLoanDistribution).forEach(([regionName, loanData]) => {
+
+        const depositData = sortedRegionsDeposits[regionName] || [];
+
+        const loanColumns = Object.keys(loanData[0]).slice(2, 13);
+        const loanRows = loanData.map(obj => Object.values(obj).slice(2, 13).map(value => typeof value === 'number' ? formatAsMoney(value) : value));
+
+        const depositColumns = Object.keys(depositData[0] || {}).slice(2);
+        const depositRows = depositData.map(obj => Object.values(obj).slice(2).map(value => typeof value === 'number' ? formatAsMoney(value) : value));
+
+        const pdf = generatePDF(loanColumns, loanRows, depositColumns, depositRows, regionName);
+        
+        console.log(pdf)
+        // files.push(pdf);
       });
 
-      setSortedRegions({});
+      setSortedRegionsLoanDistribution({});
+      setSortedRegionsDeposits({});
     }
+
     if (files.length > 0) {
       handleSubmit(files);
     }
+
     return files;
   };
 
   useEffect(() => {
-    if (Object.keys(sortedRegions).length > 0) {
+    if (Object.keys(sortedRegionsLoanDistribution).length > 0 && Object.keys(sortedRegionsDeposits).length > 0) {
       createObjectsForPDFs();
     }
-  }, [sortedRegions]);
+    // eslint-disable-next-line
+  }, [sortedRegionsLoanDistribution, sortedRegionsDeposits]);
+
+  console.log(depositData, "Deposit Data")
 
   return (
     <div className="App">
-      <Button
-        component="label"
-        role={undefined}
-        variant="contained"
-        sx={{ mb: 3 }}
-        tabIndex={-1}
-        startIcon={<CloudUploadIcon />}
-      >
-        Upload file
-        <VisuallyHiddenInput
-          onChange={handleFileUpload}
-          accept=".xlsx, .xls, .csv"
-          type="file" />
-      </Button>
+      <Grid container>
+        <Grid item xs={6}>
+          <Button
+            component="label"
+            variant="contained"
+            sx={{ mb: 3 }}
+            startIcon={<CloudUploadIcon />}
+          >
+            Loan Disbursement Upload
+            <VisuallyHiddenInput
+              onChange={handleLoandDisbursementFileUpload}
+              accept=".xlsx, .xls, .csv"
+              type="file" />
+          </Button>
+          <Button
+            component="label"
+            variant="contained"
+            sx={{ mb: 3 }}
+            startIcon={<CloudUploadIcon />}
+          >
+            Deposits Report
+            <VisuallyHiddenInput
+              onChange={handleLoandDepositsFileUpload}
+              accept=".xlsx, .xls, .csv"
+              type="file" />
+          </Button>
+        </Grid>
+      </Grid>
 
-      {data.length > 0 && (
+      {loanDisbursementData.length > 0 && (
         <TableContainer component={Paper}>
           <Table sx={{ minWidth: 650 }} aria-label="simple table">
             <TableHead>
               <TableRow>
-                {Object.keys(data[0]).map((key) => (
+                {Object.keys(loanDisbursementData[0]).map((key) => (
                   <TableCell key={key}>{key}</TableCell>
                 ))}
               </TableRow>
             </TableHead>
             <TableBody>
-              {data.map((row, index) => (
+              {loanDisbursementData.map((row, index) => (
                 <TableRow
                   key={index}
                   sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
