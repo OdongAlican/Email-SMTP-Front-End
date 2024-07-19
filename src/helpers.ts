@@ -20,7 +20,7 @@ export const determineLoanDisBurseMentColumnHeaders = (loanColumns: Array<String
 export const determineDepositsColumnHeaders = (depositColumns: Array<String>) => {
     return depositColumns.map(col => {
         return col === "PROD_DESC" ? ("PRODUCT").toUpperCase() :
-            col === "NO_OF_ACCT" ? ("NUMBER OF ACCOUNT").toUpperCase() :
+            col === "NO_OF_ACCT" ? ("NUMBER OF ACCOUNTS").toUpperCase() :
                 col === "DR_TURNOVER" ? ("DEBIT TURN OVER").toUpperCase() :
                     col === "CR_TURNOVER" ? ("CREDIT TURN OVER").toUpperCase() :
                         col === "CR_INT_ACCRUED" ? ("CREDIT INTEREST ACCRUED").toUpperCase() :

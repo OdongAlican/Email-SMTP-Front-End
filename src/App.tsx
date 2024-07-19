@@ -125,9 +125,9 @@ function App() {
         const depositRows = depositData.map(obj => Object.values(obj).slice(2).map(value => typeof value === 'number' ? formatAsMoney(value) : value));
 
         const pdf = generatePDF(loanColumns, loanRows, depositColumns, depositRows, regionName);
-        
-        console.log(pdf)
-        // files.push(pdf);
+
+        // console.log(pdf)
+        files.push(pdf);
       });
 
       setSortedRegionsLoanDistribution({});

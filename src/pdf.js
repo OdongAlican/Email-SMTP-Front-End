@@ -24,10 +24,8 @@ export const generatePDF = (loanColumns, loanRows, depositColumns, depositRows, 
         theme: 'grid'
     });
 
-    doc.save()
+    const pdfBlob = doc.output('blob');
+    const file = new File([pdfBlob], `${branchName.split(" ").join("_")}_data`, { type: 'application/pdf' });
 
-    // const pdfBlob = doc.output('blob');
-    // const file = new File([pdfBlob], `${branchName.split(" ").join("_")}_data.pdf`, { type: 'application/pdf' });
-
-    // return file;
+    return file;
 };
