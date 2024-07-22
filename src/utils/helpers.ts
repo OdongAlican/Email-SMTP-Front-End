@@ -33,6 +33,23 @@ export const determineDepositsColumnHeaders = (depositColumns: Array<String>) =>
     });
 }
 
+export const determineRegionalReportHeaders = (reportsColumns: Array<String>) => {
+    return reportsColumns.map(col => {
+        return col === "RELATIONSHIP_OFFICER" ? ("RO").toUpperCase() :
+            col === "NO_ACCS" ? ("NUMBER OF ACCOUNTS").toUpperCase() :
+                col === "LOAN_AMOUNT" ? ("LOAN AMOUNT").toUpperCase() :
+                    col === "OUTSTANDINGPRINC" ? ("OUTSTANDING PRINCIPAL").toUpperCase() :
+                        col === "TOTAL_SAVINGS" ? ("TOTAL SAVINGS").toUpperCase() :
+                            col === "PAR_1DAY" ? ("PAR 1 DAY").toUpperCase() :
+                                col === "PAR_30DAYS" ? ("PAR 30 DAYS").toUpperCase() :
+                                    col === "PAR_60DAYS" ? ("PAR 60 DAYS").toUpperCase() :
+                                        col === "PAR_90DAYS" ? ("PAR 90 DAYS").toUpperCase()
+                                            : col.toUpperCase();
+
+
+    });
+}
+
 export const VisuallyHiddenInput = styled('input')({
     clip: 'rect(0 0 0 0)',
     clipPath: 'inset(50%)',

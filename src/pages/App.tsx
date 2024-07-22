@@ -1,7 +1,17 @@
 import { useEffect, useState } from "react";
 import * as XLSX from "xlsx";
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import { Button, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from "@mui/material";
+import {
+  Button,
+  Grid,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper
+} from "@mui/material";
 import { generatePDF } from "../utils/pdf";
 import { sendEmailService } from "../utils/api";
 import { IDeposit, ILoanDisbursement, RowData } from "../utils/interface";
