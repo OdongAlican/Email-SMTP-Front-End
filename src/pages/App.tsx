@@ -8,12 +8,14 @@ import { IDeposit, ILoanDisbursement, RowData } from "../utils/interface";
 import BasicTabs, { CustomTabPanel } from "../components/TabsComponent";
 import { formatAsMoney, VisuallyHiddenInput } from "../utils/helpers";
 import RegionalReports from "./RegionalReports";
+import FormHelpers from "./FormHelpers";
 
 function App() {
   const [loanDisbursementData, setLoanDisbursementData] = useState<RowData[]>([]);
   const [sortedRegionsLoanDistribution, setSortedRegionsLoanDistribution] = useState<Record<string, ILoanDisbursement[]>>({});
   const [sortedRegionsDeposits, setSortedRegionsDeposits] = useState<Record<string, IDeposit[]>>({});
   const [value, setValue] = useState<number>(0);
+  const { handleFileUpload, sortedRegionsReports, setSortedRegionsReports } = FormHelpers();
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
@@ -115,6 +117,7 @@ function App() {
 
       setSortedRegionsLoanDistribution({});
       setSortedRegionsDeposits({});
+      setSortedRegionsReports({});
     }
 
     if (files.length > 0) {
@@ -125,11 +128,14 @@ function App() {
   };
 
   useEffect(() => {
-    if (Object.keys(sortedRegionsLoanDistribution).length > 0 && Object.keys(sortedRegionsDeposits).length > 0) {
+    if (Object.keys(sortedRegionsLoanDistribution).length > 0 
+    && Object.keys(sortedRegionsDeposits).length > 0
+    && Object.keys(sortedRegionsReports).length > 0
+  ) {
       createObjectsForPDFs();
     }
     // eslint-disable-next-line
-  }, [sortedRegionsLoanDistribution, sortedRegionsDeposits]);
+  }, [sortedRegionsLoanDistribution, sortedRegionsDeposits, sortedRegionsReports]);
 
   return (
     <div className="App">
@@ -173,7 +179,7 @@ function App() {
               >
                 Branch Report
                 <VisuallyHiddenInput
-                  // onChange={handleLoandDepositsFileUpload}
+                  onChange={handleFileUpload}
                   accept=".xlsx, .xls, .csv"
                   type="file" />
               </Button>

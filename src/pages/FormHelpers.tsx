@@ -23,7 +23,7 @@ type RowData = {
 
 const FormHelpers = () => {
     const [data, setData] = useState<RowData[]>([]);
-    const [sortedRegions, setSortedRegions] = useState<Record<string, MyObject[]>>({} as Record<string, MyObject[]>);
+    const [sortedRegionsReports, setSortedRegionsReports] = useState<Record<string, MyObject[]>>({} as Record<string, MyObject[]>);
 
     const groupByRegion = (data: MyObject[]): Record<string, MyObject[]> => {
         return data.reduce((acc: Record<string, MyObject[]>, obj) => {
@@ -62,8 +62,8 @@ const FormHelpers = () => {
                     const sheetName = workbook.SheetNames[0];
                     const sheet = workbook.Sheets[sheetName];
                     const parsedData = XLSX.utils.sheet_to_json<RowData>(sheet) as unknown as Array<MyObject>;
-                    const sortedRegions = groupByRegion(parsedData);
-                    setSortedRegions(sortedRegions)
+                    const sortedRegionsReports = groupByRegion(parsedData);
+                    setSortedRegionsReports(sortedRegionsReports)
                     setData(parsedData);
                 }
             };
@@ -73,8 +73,8 @@ const FormHelpers = () => {
     const createObjectsForPDFs = () => {
         const files: File[] = [];
 
-        if (Object.keys(sortedRegions).length > 0) {
-            Object.entries(sortedRegions).forEach(([regionName, regionData]) => {
+        if (Object.keys(sortedRegionsReports).length > 0) {
+            Object.entries(sortedRegionsReports).forEach(([regionName, regionData]) => {
                 const columns = Object.keys(regionData[0]).slice(1, 13);
                 const rows = regionData.map(obj => Object.values(obj).slice(1, 13).map(value => typeof value === 'number' ? formatAsMoney(value) : value));
 
@@ -92,7 +92,7 @@ const FormHelpers = () => {
                 // files.push(pdf);
             });
 
-            setSortedRegions({});
+            // setSortedRegionsReports({});
         }
 
         if (files.length > 0) {
@@ -104,14 +104,16 @@ const FormHelpers = () => {
 
 
     useEffect(() => {
-        if (Object.keys(sortedRegions).length > 0) {
+        if (Object.keys(sortedRegionsReports).length > 0) {
             createObjectsForPDFs();
         }
-    }, [sortedRegions]);
+    }, [sortedRegionsReports]);
 
     return ({
         handleFileUpload,
-        data
+        sortedRegionsReports,
+        data,
+        setSortedRegionsReports
     }
     )
 }
