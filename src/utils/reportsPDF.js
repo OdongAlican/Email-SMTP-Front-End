@@ -1,9 +1,12 @@
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { formatAsMoney } from './helpers';
+import moment from 'moment';
 
 export const generateReportsPDF = (columns, rows, branchName, sums) => {
     const doc = new jsPDF({ orientation: 'landscape' });
+    const date = new Date();
+    const formattedDate = moment(date.setDate(date.getDate() - 1)).format('MMMM Do YYYY');
 
     sums[0] = "TOTAL";
 
