@@ -8,7 +8,7 @@ import { IDeposit, ILoanDisbursement, RowData } from "../utils/interface";
 import BasicTabs, { CustomTabPanel } from "../components/TabsComponent";
 import { formatAsMoney, VisuallyHiddenInput } from "../utils/helpers";
 import RegionalReports from "./RegionalReports";
-import FormHelpers from "./FormHelpers";
+import FormHelpers, { MyObject } from "./FormHelpers";
 
 function App() {
   const [loanDisbursementData, setLoanDisbursementData] = useState<RowData[]>([]);
@@ -99,11 +99,15 @@ function App() {
   const createObjectsForPDFs = () => {
     const files: File[] = [];
 
-    if (Object.keys(sortedRegionsLoanDistribution).length > 0 && Object.keys(sortedRegionsDeposits).length > 0) {
+    if (Object.keys(sortedRegionsLoanDistribution).length > 0
+      && Object.keys(sortedRegionsDeposits).length > 0
+      && Object.keys(sortedRegionsReports).length > 0
+    ) {
 
       Object.entries(sortedRegionsLoanDistribution).forEach(([regionName, loanData]) => {
 
         const depositData = sortedRegionsDeposits[regionName] || [];
+        const reportsData = sortedRegionsReports[regionName] || [];
 
         const loanColumns = Object.keys(loanData[0]).slice(2, 13);
         const loanRows = loanData.map(obj => Object.values(obj).slice(2, 13).map(value => typeof value === 'number' ? formatAsMoney(value) : value));
@@ -111,8 +115,20 @@ function App() {
         const depositColumns = Object.keys(depositData[0] || {}).slice(2);
         const depositRows = depositData.map(obj => Object.values(obj).slice(2).map(value => typeof value === 'number' ? formatAsMoney(value) : value));
 
-        const pdf = generatePDF(loanColumns, loanRows, depositColumns, depositRows, regionName);
-        files.push(pdf);
+        const reportsColumns = Object.keys(reportsData[0]).slice(1, 13);
+        const reportsRows = reportsData.map(obj => Object.values(obj).slice(1, 13).map(value => typeof value === 'number' ? formatAsMoney(value) : value));
+
+        const sums = new Array(reportsColumns.length).fill(0);
+        reportsData.forEach(obj => {
+          reportsColumns.forEach((col, index) => {
+            if (!isNaN(sums[index])) {
+              sums[index] += obj[col as keyof MyObject];
+            }
+          });
+        });
+
+        const pdf = generatePDF(loanColumns, loanRows, depositColumns, depositRows, reportsColumns, reportsRows, regionName, sums);
+        // files.push(pdf);
       });
 
       setSortedRegionsLoanDistribution({});
@@ -128,10 +144,10 @@ function App() {
   };
 
   useEffect(() => {
-    if (Object.keys(sortedRegionsLoanDistribution).length > 0 
-    && Object.keys(sortedRegionsDeposits).length > 0
-    && Object.keys(sortedRegionsReports).length > 0
-  ) {
+    if (Object.keys(sortedRegionsLoanDistribution).length > 0
+      && Object.keys(sortedRegionsDeposits).length > 0
+      && Object.keys(sortedRegionsReports).length > 0
+    ) {
       createObjectsForPDFs();
     }
     // eslint-disable-next-line

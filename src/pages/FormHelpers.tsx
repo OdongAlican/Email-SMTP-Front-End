@@ -4,7 +4,7 @@ import * as XLSX from "xlsx";
 import { formatAsMoney } from '../utils/helpers';
 import { generateReportsPDF } from '../utils/reportsPDF';
 
-interface MyObject {
+export interface MyObject {
     BU_NM: string;
     RELATIONSHIP_OFFICER: number;
     NO_ACCS: number;
@@ -88,7 +88,7 @@ const FormHelpers = () => {
                     });
                 });
 
-                const pdf = generateReportsPDF(columns, rows, regionName, sums);
+                // const pdf = generateReportsPDF(columns, rows, regionName, sums);
                 // files.push(pdf);
             });
 
