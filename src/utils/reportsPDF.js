@@ -1,36 +1,24 @@
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import { formatAsMoney } from './helpers';
 
-export const generateReportsPDF = (columns, rows, branchName) => {
+export const generateReportsPDF = (columns, rows, branchName, sums) => {
     const doc = new jsPDF({ orientation: 'landscape' });
 
+    sums[0] = "TOTAL";
+    
     doc.text(`Loans Disbursed for ${branchName} Branch on 17th July 2024`, 10, 10);
 
-    const customHeaders = columns.map(col => {
-        return col === "CREDIT_OFFICER" ? ("RO").toUpperCase() :
-            col === "DIBS_MAFL" ? ("MALF").toUpperCase() :
-                col === "DIBS_CLEAN_ENERGY" ? ("CLEAN ENERGY").toUpperCase() :
-                    col === "DIBS_GGLS" ? ("GGLS").toUpperCase() :
-                        col === "DIBS_SGL" ? ("Salary Guarantee").toUpperCase() :
-                            col === "DIBS_CB" ? ("Community Banking").toUpperCase() :
-                                col === "DIBS_SALARY_ADV" ? ("Salary Advance").toUpperCase() :
-                                    col === "DIBS_BL" ? ("Business Loan").toUpperCase() :
-                                        col === "DIBS_SCH_FEES" ? ("School Fees").toUpperCase() :
-                                            col === "DIBS_AGRIC" ? ("Agriculture").toUpperCase() :
-                                                col === "DIBS_PHL" ? ("Housing").toUpperCase()
-                                                    : col.toUpperCase();
-    });
+    const sumRow = sums.map(value => typeof value === 'number' ? formatAsMoney(value) : value);
 
     doc.autoTable({
-        head: [customHeaders],
+        head: [columns],
         body: rows,
+        foot: [sumRow],
         startY: 20,
-        theme: 'grid'
+        theme: 'grid',
+        showFoot: "lastPage",
     });
 
-    const pdfBlob = doc.output('blob');
-
-    const file = new File([pdfBlob], `${branchName.split(" ").join("_")}_data`, { type: 'application/pdf' });
-
-    return file;
+    doc.save(`${branchName.split(" ").join("_")}_data.pdf`);
 };

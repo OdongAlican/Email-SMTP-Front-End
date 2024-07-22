@@ -14,17 +14,15 @@ import { generateReportsPDF } from "../utils/reportsPDF";
 import { sendReportsService } from "../utils/api";
 interface MyObject {
     BU_NM: string;
-    ACCT_NO: number;
-    DIBS_MAFL: number;
-    DIBS_CLEAN_ENERGY: number;
-    DIBS_GGLS: number;
-    DIBS_SGL: number;
-    DIBS_CB: number;
-    DIBS_SALARY_ADV: number;
-    DIBS_BL: number;
-    DIBS_SCH_FEES: number;
-    DIBS_AGRIC: number;
-    DIBS_PHL: number;
+    RELATIONSHIP_OFFICER: number;
+    NO_ACCS: number;
+    LOAN_AMOUNT: number;
+    OUTSTANDINGPRINC: number;
+    TOTAL_SAVINGS: number;
+    PAR_1DAY: number;
+    PAR_30DAYS: number;
+    PAR_60DAYS: number;
+    PAR_90DAYS: number;
 }
 
 type RowData = {
@@ -73,6 +71,7 @@ const RegionalReports = () => {
                     const sheet = workbook.Sheets[sheetName];
                     const parsedData = XLSX.utils.sheet_to_json<RowData>(sheet) as unknown as Array<MyObject>;
                     const sortedRegions = groupByRegion(parsedData);
+                    console.log(sortedRegions, "sorted regions!!")
                     setSortedRegions(sortedRegions)
                     setData(parsedData);
                 }
@@ -80,25 +79,58 @@ const RegionalReports = () => {
         }
     };
 
+    // const createObjectsForPDFs = () => {
+    //     const files: File[] = [];
+
+    //     if (Object.keys(sortedRegions).length > 0) {
+    //         Object.entries(sortedRegions).forEach(([regionName, regionData]) => {
+    //             const columns = Object.keys(regionData[0]).slice(1, 13);
+    //             const rows = regionData.map(obj => Object.values(obj).slice(1, 13).map(value => typeof value === 'number' ? formatAsMoney(value) : value));
+
+    //             const pdf = generateReportsPDF(columns, rows, regionName);
+    //             // files.push(pdf);
+    //         });
+
+    //         setSortedRegions({});
+    //     }
+    //     if (files.length > 0) {
+    //         handleSubmit(files);
+    //     }
+    //     return files;
+    // };
+
     const createObjectsForPDFs = () => {
         const files: File[] = [];
 
         if (Object.keys(sortedRegions).length > 0) {
             Object.entries(sortedRegions).forEach(([regionName, regionData]) => {
-                const columns = Object.keys(regionData[0]).slice(2, 13);
-                const rows = regionData.map(obj => Object.values(obj).slice(2, 13).map(value => typeof value === 'number' ? formatAsMoney(value) : value));
+                const columns = Object.keys(regionData[0]).slice(1, 13);
+                const rows = regionData.map(obj => Object.values(obj).slice(1, 13).map(value => typeof value === 'number' ? formatAsMoney(value) : value));
 
-                const pdf = generateReportsPDF(columns, rows, regionName);
-                files.push(pdf);
+                const sums = new Array(columns.length).fill(0);
+
+                regionData.forEach(obj => {
+                    columns.forEach((col, index) => {
+                        if (!isNaN(sums[index])) {
+                            sums[index] += obj[col as keyof MyObject];
+                        }
+                    });
+                });
+
+                const pdf = generateReportsPDF(columns, rows, regionName, sums);
+                // files.push(pdf);
             });
 
             setSortedRegions({});
         }
+
         if (files.length > 0) {
             handleSubmit(files);
         }
+
         return files;
     };
+
 
     useEffect(() => {
         if (Object.keys(sortedRegions).length > 0) {
@@ -116,7 +148,7 @@ const RegionalReports = () => {
                 tabIndex={-1}
                 startIcon={<CloudUploadIcon />}
             >
-                Upload Department Report
+                Upload Regional Report
                 <VisuallyHiddenInput
                     onChange={handleFileUpload}
                     accept=".xlsx, .xls, .csv"
