@@ -71,33 +71,12 @@ const RegionalReports = () => {
                     const sheet = workbook.Sheets[sheetName];
                     const parsedData = XLSX.utils.sheet_to_json<RowData>(sheet) as unknown as Array<MyObject>;
                     const sortedRegions = groupByRegion(parsedData);
-                    console.log(sortedRegions, "sorted regions!!")
                     setSortedRegions(sortedRegions)
                     setData(parsedData);
                 }
             };
         }
     };
-
-    // const createObjectsForPDFs = () => {
-    //     const files: File[] = [];
-
-    //     if (Object.keys(sortedRegions).length > 0) {
-    //         Object.entries(sortedRegions).forEach(([regionName, regionData]) => {
-    //             const columns = Object.keys(regionData[0]).slice(1, 13);
-    //             const rows = regionData.map(obj => Object.values(obj).slice(1, 13).map(value => typeof value === 'number' ? formatAsMoney(value) : value));
-
-    //             const pdf = generateReportsPDF(columns, rows, regionName);
-    //             // files.push(pdf);
-    //         });
-
-    //         setSortedRegions({});
-    //     }
-    //     if (files.length > 0) {
-    //         handleSubmit(files);
-    //     }
-    //     return files;
-    // };
 
     const createObjectsForPDFs = () => {
         const files: File[] = [];

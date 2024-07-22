@@ -6,8 +6,8 @@ export const generateReportsPDF = (columns, rows, branchName, sums) => {
     const doc = new jsPDF({ orientation: 'landscape' });
 
     sums[0] = "TOTAL";
-    
-    doc.text(`Loans Disbursed for ${branchName} Branch on 17th July 2024`, 10, 10);
+
+    doc.text(`Loans Disbursed for ${branchName} Branch on ${formattedDate}`, 15, 10);
 
     const sumRow = sums.map(value => typeof value === 'number' ? formatAsMoney(value) : value);
 
