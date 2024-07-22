@@ -135,12 +135,12 @@ function App() {
     <div className="App">
       <BasicTabs value={value} handleChange={handleChange}>
         <CustomTabPanel value={value} index={0}>
-          <Grid container>
-            <Grid item xs={6}>
+          <Grid container xs={6}>
+            <Grid item xs={6} spacing={3} sx={{ px: 3 }}>
               <Button
                 component="label"
                 variant="contained"
-                sx={{ mb: 3 }}
+                sx={{ mb: 3, width: "100%" }}
                 startIcon={<CloudUploadIcon />}
               >
                 Loan Disbursement Upload
@@ -149,15 +149,31 @@ function App() {
                   accept=".xlsx, .xls, .csv"
                   type="file" />
               </Button>
+            </Grid>
+            <Grid item xs={6} spacing={3} sx={{ px: 3 }}>
               <Button
                 component="label"
                 variant="contained"
-                sx={{ mb: 3 }}
+                sx={{ mb: 3, width: "100%" }}
                 startIcon={<CloudUploadIcon />}
               >
                 Deposits Report
                 <VisuallyHiddenInput
                   onChange={handleLoandDepositsFileUpload}
+                  accept=".xlsx, .xls, .csv"
+                  type="file" />
+              </Button>
+            </Grid>
+            <Grid item xs={6} spacing={3} sx={{ px: 3 }}>
+              <Button
+                component="label"
+                variant="contained"
+                sx={{ mb: 3, width: "100%" }}
+                startIcon={<CloudUploadIcon />}
+              >
+                Branch Report
+                <VisuallyHiddenInput
+                  // onChange={handleLoandDepositsFileUpload}
                   accept=".xlsx, .xls, .csv"
                   type="file" />
               </Button>
@@ -168,32 +184,34 @@ function App() {
           <RegionalReports />
         </CustomTabPanel>
       </BasicTabs>
-      {loanDisbursementData.length > 0 && (
-        <TableContainer component={Paper}>
-          <Table sx={{ minWidth: 650 }} aria-label="simple table">
-            <TableHead>
-              <TableRow>
-                {Object.keys(loanDisbursementData[0]).map((key) => (
-                  <TableCell key={key}>{key}</TableCell>
-                ))}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {loanDisbursementData.map((row, index) => (
-                <TableRow
-                  key={index}
-                  sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                >
-                  {Object.values(row).map((value, index) => (
-                    <TableCell key={index}>{typeof value === 'number' ? formatAsMoney(value) : value}</TableCell>
+      {
+        loanDisbursementData.length > 0 && (
+          <TableContainer component={Paper}>
+            <Table sx={{ minWidth: 650 }} aria-label="simple table">
+              <TableHead>
+                <TableRow>
+                  {Object.keys(loanDisbursementData[0]).map((key) => (
+                    <TableCell key={key}>{key}</TableCell>
                   ))}
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )}
-    </div>
+              </TableHead>
+              <TableBody>
+                {loanDisbursementData.map((row, index) => (
+                  <TableRow
+                    key={index}
+                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                  >
+                    {Object.values(row).map((value, index) => (
+                      <TableCell key={index}>{typeof value === 'number' ? formatAsMoney(value) : value}</TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )
+      }
+    </div >
   );
 }
 
